@@ -11,10 +11,10 @@ module.exports = function requestp(options) {
   request(
     r,
     function (err, res, body) {
-      if (!err && Math.floor(res.statusCode / 100) === 2) {
+      if (!err && res && Math.floor(res.statusCode / 100) === 2) {
         return d.resolve(body)
       }
-      d.reject({ error: err, statusCode: res.statusCode, body: body })
+      d.reject({ error: err, statusCode: res ? res.statusCode : 599, body: body })
     }
   )
   return d.promise
