@@ -1,27 +1,46 @@
 language: node_js
 
 node_js:
- - 0.10
+ - "0.10"
 
 services:
  - memcached
 
+mysql:
+  adapter: mysql2
+  username: root
+  encoding: utf8
+  database: fxa
+
 notifications:
   email:
-    - zcarter@mozilla.com
-    - dcoates@mozilla.com
-    - jbonacci@mozilla.com
-    - rfkelly@mozilla.com
-    - achilton@mozilla.com
-  irc:
-    channels:
-      - "irc.mozilla.org#fxa"
-    use_notice: false
-    skip_join: false
+    - jrgm@mozilla.com
+  #   - zcarter@mozilla.com
+  #   - dcoates@mozilla.com
+  #   - jbonacci@mozilla.com
+  #   - rfkelly@mozilla.com
+  #   - achilton@mozilla.com
+  # irc:
+  #   channels:
+  #     - "irc.mozilla.org#fxa"
+  #   use_notice: false
+  #   skip_join: false
 
 before_install:
   - sudo apt-get install libgmp3-dev
 
-script:
-  - npm test
-  - grunt validate-shrinkwrap
+install:
+  - npm install
+  - npm install --prefix /tmp/fxadbs git://github.com/mozilla/fxa-auth-db-server.git
+  - cd /tmp/fxadbs/node_modules/fxa-auth-db-server
+  # maybe do `after_failure` cat?
+  - npm start &>/tmp/fxadbs/auth-db.log & 
+  - cd -
+
+# run tests for all three backends
+env:
+  - DB_BACKEND=memory 
+  - DB_BACKEND=mysql  
+  - DB_BACKEND=httpdb 
+
+script: 'npm test && grunt validate-shrinkwrap'
