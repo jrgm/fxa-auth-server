@@ -50,7 +50,7 @@
     "ass": "0.0.4",
     "awsbox": "0.7.0",
     "awsboxen": "0.5.2",
-    "fxa-auth-db-mem": "git://github.com/jrgm/fxa-auth-db-mem.git#ca814abeb74c2e7aa13e18939d494cb002bebb1c",
+    "fxa-auth-db-mem": "git://github.com/jrgm/fxa-auth-db-mem.git#97f787bf5e6f6a5c222b0f534325e28d7c420e51",
     "grunt": "0.4.5",
     "grunt-cli": "0.1.13",
     "grunt-contrib-jshint": "0.10.0",
