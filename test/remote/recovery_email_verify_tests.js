@@ -62,13 +62,13 @@ TestServer.start(config)
   )
 
   test(
-    'verifcation email link',
+    'verification email link',
     function (t) {
       var email = server.uniqueEmail()
       var password = 'something'
       var client = null
       var options = {
-        redirectTo: 'https://sync.firefox.com',
+        redirectTo: 'https://sync.' + config.smtp.redirectDomain,
         service: 'sync'
       }
       return Client.create(config.publicUrl, email, password, options)

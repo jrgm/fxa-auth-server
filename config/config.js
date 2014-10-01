@@ -132,7 +132,8 @@ module.exports = function (fs, path, url, convict) {
       redirectDomain: {
         doc: 'Domain that mail urls are allowed to redirect to',
         format: String,
-        default: 'firefox.com'
+        default: 'firefox.com',
+        env: 'REDIRECT_DOMAIN',
       },
       resendBlackoutPeriod: {
         doc: 'Blackout period for resending verification emails',
