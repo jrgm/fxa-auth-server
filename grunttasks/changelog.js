@@ -2,10 +2,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+// generate a conventional changelog
+
 module.exports = function (grunt) {
-  require('load-grunt-tasks')(grunt);
+  'use strict';
 
-  grunt.loadTasks('grunttasks');
+  grunt.config('changelog', {
+      options: {
+        dest: "CHANGELOG"
+      }
+  });
 
-  grunt.registerTask('default', ['jshint', 'copyright']);
 };
