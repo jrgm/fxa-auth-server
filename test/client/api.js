@@ -123,6 +123,9 @@ ClientApi.prototype.accountLogin = function (email, authPW, opts) {
       authPW: authPW.toString('hex'),
       service: opts.service || undefined,
       reason: opts.reason || undefined
+    },
+    {
+      'accept-language': opts.lang
     }
   )
 }
@@ -276,7 +279,7 @@ ClientApi.prototype.passwordChangeStart = function (email, oldAuthPW, newAuthPW)
   )
 }
 
-ClientApi.prototype.passwordChangeFinish = function (passwordChangeTokenHex, authPW, wrapKb) {
+ClientApi.prototype.passwordChangeFinish = function (passwordChangeTokenHex, authPW, wrapKb, headers) {
   return tokens.PasswordChangeToken.fromHex(passwordChangeTokenHex)
     .then(
       function (token) {
@@ -287,6 +290,9 @@ ClientApi.prototype.passwordChangeFinish = function (passwordChangeTokenHex, aut
           {
             authPW: authPW.toString('hex'),
             wrapKb: wrapKb.toString('hex')
+          },
+          {
+            'accept-language': headers.lang
           }
         )
       }.bind(this)
@@ -329,7 +335,7 @@ ClientApi.prototype.passwordForgotResendCode = function (passwordForgotTokenHex,
     )
 }
 
-ClientApi.prototype.passwordForgotVerifyCode = function (passwordForgotTokenHex, code) {
+ClientApi.prototype.passwordForgotVerifyCode = function (passwordForgotTokenHex, code, locale) {
   return tokens.PasswordForgotToken.fromHex(passwordForgotTokenHex)
     .then(
       function (token) {
@@ -339,6 +345,9 @@ ClientApi.prototype.passwordForgotVerifyCode = function (passwordForgotTokenHex,
           token,
           {
             code: code
+          },
+          {
+            'accept-language': locale
           }
         )
       }.bind(this)

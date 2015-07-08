@@ -14,6 +14,9 @@ const url = require('url')
 const P = require('../../lib/promise')
 const preq = require('./p-request')
 const localeQuirks = require('./localeQuirks')
+var Client = require('../../test/client')
+
+const password = crypto.randomBytes(32).toString('hex')
 
 var program
 try {
@@ -30,9 +33,6 @@ program
   .option('-r, --restmail-domain [fqdn]',
           'URL of the restmail server',
           'restmail.net')
-  .option('-l, --locales [path]',
-          'Path to list of locales to test',
-          '../../config/supportedLanguages.js')
   .option('-L, --locale <en[,zh-TW,de,...]>',
           'Test only this csv list of locales',
           function(list) {
@@ -44,9 +44,6 @@ program
   .option('-b, --basename [string]',
           'Base username for this test run',
           crypto.randomBytes(8).toString('hex'))
-  .option('-p, --password [64 hex string]',
-          'Password to use for this test run',
-          crypto.randomBytes(32).toString('hex'))
   .parse(process.argv)
 
 const VERIFY_PATH = '/v1/verify_email'
@@ -184,14 +181,14 @@ function argsFromLang(lang, withPassword) {
     email: emailFromLang(lang),
   }
   if (withPassword) {
-    args.authPW = program.password
+    args.authPW = password
   }
   return args
 }
 
-function optionsFromLangAndPath(lang, path) {
+function createRequestOptions(lang, path) {
   var options = {
-    url: program.authServer + path,
+    url: url.resolve(program.authServer, path),
     headers: {
       'accept-language': lang
     }
@@ -203,7 +200,7 @@ function createRequest(path, useAuthPW) {
   return function(result) {
     var lang = result.req._headers['accept-language']
     var args = argsFromLang(lang, useAuthPW)
-    var options = optionsFromLangAndPath(lang, path)
+    var options = createRequestOptions(lang, path)
 
     log(log.INFO, 'Starting request:', lang, path)
 
@@ -211,9 +208,177 @@ function createRequest(path, useAuthPW) {
   }
 }
 
+/*
+
+  - signup for service sync
+  - CHECK the email; use the link to confirm
+  - signin, as if second device
+  - CHECK that I get a notification email of a second device
+  - change the password
+  - CHECK that I get a notification email of a password change
+  - trigger a password reset
+  - CHECK that I get a password reset email
+  - use the reset email link to complete the password reset
+  - CHECK that I get a notification email of a password reset
+  - trigger an account lock
+  - trigger an account unlock
+  - CHECK that I get an unlock email (but it's moot if I unlock a test account)
+
+*/
+
+function fetchMailbox(lang, expect) {
+  function resultComplete(res) {
+    return res.body && res.body.length === expect
+  }
+
+  var restmail = 'http://' + program.restmailDomain + '/mail/'
+  var options = {
+    url: restmail + program.basename + '-' + lang,
+    complete: resultComplete,
+    progress: log.bind(null, log.level)
+  }
+
+  // Briefly delay in order to allow SMTP to happen, and not trigger
+  // unnecessary retries; `preq.get` will handle any actual subsequent
+  // need to retry.
+  return P.delay(1000).then(function() {
+    return preq.get(options)
+      .then(function(mailbox) {
+        return {
+          lang: lang,
+          mailbox: mailbox
+        }
+      })
+  })
+}
+
+function signupForSync(lang) {
+  var path = '/v1/account/create'
+  var options = {
+    url: url.resolve(program.authServer, path),
+    headers: {
+      'accept-language': lang
+    }
+  }
+  var args = {
+    email: emailFromLang(lang),
+    authPW: password,
+    service: 'sync'
+  }
+
+  var sessionToken, uid
+  
+  return preq.post(options, args)
+    .then(function(result) {
+      sessionToken = result.body.sessionToken
+      uid = result.body.uid
+    })
+    .then(function() {
+      return fetchMailbox(lang, 1)
+    })
+}
+
+function completeSignup(state) {
+  var lang = state.lang
+  var email = state.mailbox[0]
+  var headers = email.headers
+
+  var options = {
+    url: url.resolve(program.authServer, '/v1/recovery_email/verify_code'),
+    progress: log.bind(null, log.level),
+    headers: {
+      'accept-language': lang
+    }
+  }
+
+  var args = {
+    uid: headers['x-uid'],
+    code: headers['x-verify-code']
+  }
+  
+  return preq.post(options, args)
+    .then(function(res) {
+      return {
+        lang: lang,
+        res: res
+      }
+    })
+}
+
+function signinAsSecondDevice(state) {
+  var lang = state.lang
+
+  var options = {
+    url: url.resolve(program.authServer, '/v1/account/login'),
+    progress: log.bind(null, log.level),
+    headers: {
+      'accept-language': lang
+    }
+  }
+
+  var args = {
+    email: emailFromLang(lang),
+    authPW: password,
+    service: 'sync',
+    reason: 'signin'
+  }
+  
+  return preq.post(options, args)
+    .then(function(res) {
+      return {
+        lang: lang,
+        res: res
+      }
+    })
+}
+
+function confirmSecondDeviceNotification(state) {
+  return fetchMailbox(state.lang, 2)
+    .then(function(state) {
+      var lang = state.lang
+      var mailbox = state.mailbox
+      var email = mailbox[1]
+      var headers = email.headers
+      var link = headers['x-link']
+
+      var subjectEn = 'A new device is now syncing to your Firefox Account'
+      if (lang == 'en' || lang == 'en-US') {
+        //
+      } else {
+      }
+
+      // In a non-en locale, the closest I can come to confirming that this is
+      // the right email content is that it should have a reset link.
+      if (! link.match(/\/v1\/reset_password\?email=/)) {
+        console.log(link, 'is not for reset_password') // XXX
+      }
+
+      return state
+    })
+}
+
+function changePassword(state) {
+  var lang = state.lang
+  var email = emailFromLang(lang)
+  debugger
+  return Client.changePassword(program.authServer, email, password, password)
+    .then(function (rv) {
+      debugger
+    })
+}
+
+function confirmPasswordChangeNotification(state) {}
+function startPasswordReset(state) {}
+function completePasswordReset(state) {}
+function confirmPasswordResetNotification(state) {}
+function forceAccountLock(state) {
+  // Note: /account/lock is not available in production
+}
+function startAccountUnlock(start) {}
+function confirmUnlock(start) {}
+
 function checkLocale(lang, index) {
   var args = argsFromLang(lang, true)
-  var options = optionsFromLangAndPath(lang, '/v1/account/create')
 
   // AWS SES in stage has rate-limiting in stage of 5/sec, so go slow
   var delay = index * 750
@@ -223,48 +388,12 @@ function checkLocale(lang, index) {
       function() {
         log(log.INFO, 'Kicking off', lang)
 
-        // Note: /account/lock is not available in production
-        return preq.post(options, args)
-          .then(createRequest('/v1/password/forgot/send_code', false))
-          .then(createRequest('/v1/account/lock', true))
-          .then(createRequest('/v1/account/unlock/resend_code', false))
-          .then(
-            function(result) {
-
-              function resultComplete(res) {
-                // we expect emails for: 'verify', 'reset' and 'unlock'
-                var state = (res.body &&
-                             res.body.length === 3 &&
-                             'from' in res.body[0] &&
-                             'from' in res.body[1] &&
-                             'from' in res.body[2])
-                return state
-              }
-
-              var lang = result.req._headers['accept-language']
-
-              var options = {
-                url: 'http://' + program.restmailDomain + '/mail/' +
-                  program.basename + '-' + lang,
-                complete: resultComplete,
-                progress: log.bind(null, log.level)
-              }
-
-              // Briefly delay in order to allow SMTP to happen, and not trigger
-              // unnecessary retries; `preq.get` will handle any actual subsequent
-              // need to retry.
-              return P.delay(1000).then(function() {
-                return preq.get(options)
-              })
-            }
-          )
-          .then(
-            function(result) {
-              var mbox = verifyMailbox(result, log)
-              log(log.INFO, 'Completed mail for locale', mbox.lang)
-              return mbox
-            }
-          )
+        return signupForSync(lang)
+          .then(completeSignup)
+          .then(signinAsSecondDevice)
+          .then(confirmSecondDeviceNotification)
+          .then(changePassword)
+          .then(confirmPasswordChangeNotification)
           .catch(
             function(err) {
               log(log.ERROR, err)

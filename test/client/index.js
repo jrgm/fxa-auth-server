@@ -72,13 +72,13 @@ Client.login = function (origin, email, password, opts) {
     )
 }
 
-Client.changePassword = function (origin, email, oldPassword, newPassword) {
+Client.changePassword = function (origin, email, oldPassword, newPassword, headers) {
   var c = new Client(origin)
 
   return c.setupCredentials(email, oldPassword)
     .then(
       function () {
-        return c.changePassword(newPassword)
+        return c.changePassword(newPassword, headers)
         .then(
           function () {
             return c
@@ -207,8 +207,9 @@ Client.prototype.sign = function (publicKey, duration) {
   )
 }
 
-Client.prototype.changePassword = function (newPassword) {
-  return this.api.passwordChangeStart(this.email, this.authPW)
+Client.prototype.changePassword = function (newPassword, headers) {
+  headers = headers || {}
+  return this.api.passwordChangeStart(this.email, this.authPW, headers)
     .then(
       function (json) {
         this.keyFetchToken = json.keyFetchToken
@@ -224,7 +225,7 @@ Client.prototype.changePassword = function (newPassword) {
     .then(
       function () {
         this.wrapKb = butil.xorBuffers(this.kB, this.unwrapBKey)
-        return this.api.passwordChangeFinish(this.passwordChangeToken, this.authPW, this.wrapKb)
+        return this.api.passwordChangeFinish(this.passwordChangeToken, this.authPW, this.wrapKb, headers)
       }.bind(this)
     )
     .then(
@@ -294,8 +295,8 @@ Client.prototype.reforgotPassword = function () {
   return this.api.passwordForgotResendCode(this.passwordForgotToken, this.email)
 }
 
-Client.prototype.verifyPasswordResetCode = function (code) {
-  return this.api.passwordForgotVerifyCode(this.passwordForgotToken, code)
+Client.prototype.verifyPasswordResetCode = function (code, locale) {
+  return this.api.passwordForgotVerifyCode(this.passwordForgotToken, code, locale)
     .then(
       function (result) {
         this.accountResetToken = result.accountResetToken

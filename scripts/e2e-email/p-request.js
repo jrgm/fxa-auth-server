@@ -11,7 +11,7 @@ function post(opts, args) {
   opts.body = args
   opts.progress = opts.progress || Function.prototype
 
-  opts.progress('POSTing to', opts.url, opts.headers['accept-language'])
+  opts.progress('POSTing to', opts.url, opts.headers && opts.headers['accept-language'])
 
   request.post(opts, function(err, res, body) {
     if (err) {
