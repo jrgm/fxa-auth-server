@@ -26,6 +26,7 @@ notifications:
     skip_join: false
 
 before_install:
+  - npm install -g npm@2
   - npm config set spin false
 
 script:
