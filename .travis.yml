@@ -34,5 +34,6 @@ before_install:
 
 script:
   - if [ DB == "mysql" ]; then npm run start-mysql; fi
+  - mysql -uroot -e 'drop database fxa'
   - npm test
   - grunt validate-shrinkwrap --force
