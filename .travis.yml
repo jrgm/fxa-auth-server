@@ -33,7 +33,7 @@ before_install:
   - npm config set spin false
 
 script:
-  - if [ $DB == "mysql" ]; then (npm run start-mysql &); fi
+  - if [ $DB == "mysql" ]; then (npm run start-mysql &>/dev/null &); fi
   - mysql -uroot -e 'drop database if exists fxa'
   - npm test
   - grunt validate-shrinkwrap --force
