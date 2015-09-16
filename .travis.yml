@@ -34,6 +34,5 @@ before_install:
 
 script:
   - if [ DB == "mysql" ]; then npm run start-mysql; fi
-  - netstat -tanp | grep 3306
   - npm test
   - grunt validate-shrinkwrap --force
