@@ -8,7 +8,6 @@ env:
 node_js:
  - "0.10"
  - "0.12"
- - "iojs-v1"
  - "iojs-v2"
 
 sudo: false
@@ -34,6 +33,5 @@ before_install:
 
 script:
   - if [ $DB == "mysql" ]; then (npm run start-mysql &>/dev/null &); fi
-  - mysql -uroot -e 'drop database if exists fxa'
   - npm test
   - grunt validate-shrinkwrap --force
