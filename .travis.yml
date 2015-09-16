@@ -32,6 +32,6 @@ before_install:
   - npm config set spin false
 
 script:
-  - if [ $DB == "mysql" ]; then (npm run start-mysql &>/dev/null &); fi
+  - if [ $DB == "mysql" ]; then (node ./scripts/start-local-test-mysql.sh &>/dev/null &); fi
   - npm test
   - grunt validate-shrinkwrap --force
