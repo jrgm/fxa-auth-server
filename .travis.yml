@@ -40,7 +40,7 @@ install:
 
 script:
   - date
-  - if [ $DB == "mysql" ]; then (./scripts/start-local-test-mysql.sh &>/dev/null &); fi
+  - if [ $DB == "mysql" ]; then (./scripts/start-local-test-mysql.sh &>/dev/null); fi
   - date
   - sleep 5
   - date
