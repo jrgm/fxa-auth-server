@@ -41,7 +41,7 @@ install:
 # &>/dev/null
 script:
   - date
-  - if [ $DB == "mysql" ]; then ./scripts/start-local-test-mysql.sh; fi
+  - if [ $DB == "mysql" ]; then ./scripts/start-travis-auth-db-mysql.sh; fi
   - date
   - sleep 5
   - date
