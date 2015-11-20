@@ -7,8 +7,6 @@ env:
 
 node_js:
  - "0.10"
- - "0.12"
- - "iojs-v2"
 
 sudo: false
 
