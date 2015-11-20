@@ -35,7 +35,6 @@ before_install:
 script:
   - if [ $DB == "mysql" ]; then echo '~*~ Starting auth-db-mysql'; (./scripts/start-local-test-mysql.sh &>/dev/null &); fi
   - sleep 10
-  - ps -efww | grep node
-  - netstat -tanp | grep :3306
+  - "ps -efww | grep node"
   - npm test
   - grunt nsp --force
