@@ -38,13 +38,11 @@ install:
   - npm install
   - if [ $DB == "mysql" ]; then (cd node_modules/fxa-auth-db-mysql && npm install); fi
 
-# &>/dev/null
+
 script:
   - date
-  - if [ $DB == "mysql" ]; then ./scripts/start-travis-auth-db-mysql.sh; fi
+  - if [ $DB == "mysql" ]; then ./scripts/start-travis-auth-db-mysql.sh &>/dev/null; fi
   - date
-  - sleep 5
-  - date
-  - curl http://127.0.0.1:8000/ || echo oops
+  - curl http://127.0.0.1:8000/ || echo "fxa-auth-db-mysql failed to start"
   - npm test
   - grunt nsp --force
