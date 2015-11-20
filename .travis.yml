@@ -38,9 +38,10 @@ install:
   - npm install
   - if [ $DB == "mysql" ]; then (cd node_modules/fxa-auth-db-mysql && npm install); fi
 
+# &>/dev/null
 script:
   - date
-  - if [ $DB == "mysql" ]; then (./scripts/start-local-test-mysql.sh &>/dev/null); fi
+  - if [ $DB == "mysql" ]; then ./scripts/start-local-test-mysql.sh; fi
   - date
   - sleep 5
   - date
