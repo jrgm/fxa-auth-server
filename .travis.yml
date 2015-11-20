@@ -17,27 +17,11 @@ env:
   - NODE_ENV=test DB=memory
   - NODE_ENV=test DB=mysql
 
-notifications:
-  email:
-    - zcarter@mozilla.com
-    - dcoates@mozilla.com
-    - jbonacci@mozilla.com
-    - rfkelly@mozilla.com
-    - jrgm@mozilla.com
-  irc:
-    channels:
-      - "irc.mozilla.org#fxa-bots"
-    use_notice: false
-    skip_join: false
-
 before_install:
   - npm install -g npm@2
   - npm config set spin false
 
-install: 
-  - npm install
-
 script:
-  - if [ $DB == "mysql" ]; then ./scripts/start-travis-auth-db-mysql.sh &>/dev/null; fi
+  - if [ $DB == "mysql" ]; then ./scripts/start-travis-auth-db-mysql.sh; fi
   - npm test
   - grunt nsp --force

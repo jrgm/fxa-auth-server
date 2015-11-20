@@ -7,8 +7,9 @@ node ./scripts/gen_keys.js
 # force install of mysql-patcher
 (cd node_modules/fxa-auth-db-mysql && npm install)
 
+mysql -e 'DROP DATABASE IF EXISTS fxa'
 node ./node_modules/fxa-auth-db-mysql/bin/db_patcher.js
-node ./node_modules/fxa-auth-db-mysql/bin/server.js & 
+nohup node ./node_modules/fxa-auth-db-mysql/bin/server.js &>/dev/null & 
 
 # give auth-db-mysql a moment to start up
 sleep 5
