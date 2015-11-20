@@ -25,3 +25,6 @@ script:
   - if [ $DB == "mysql" ]; then ./scripts/start-travis-auth-db-mysql.sh; fi
   - npm test
   - grunt nsp --force
+
+after_failure:
+  - cat /var/tmp/db-mysql.out

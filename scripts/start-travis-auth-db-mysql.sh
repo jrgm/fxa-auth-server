@@ -9,7 +9,8 @@ node ./scripts/gen_keys.js
 
 mysql -e 'DROP DATABASE IF EXISTS fxa'
 node ./node_modules/fxa-auth-db-mysql/bin/db_patcher.js
-nohup node ./node_modules/fxa-auth-db-mysql/bin/server.js &>/dev/null & 
+
+nohup node ./node_modules/fxa-auth-db-mysql/bin/server.js &>/var/tmp/db-mysql.out & 
 
 # give auth-db-mysql a moment to start up
 sleep 5
