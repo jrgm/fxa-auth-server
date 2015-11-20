@@ -31,6 +31,7 @@ notifications:
 
 before_install:
   - npm config set spin false
+  - mysql -uroot -e 'create database if not exists fxa'
 
 script:
   - if [ $DB == "mysql" ]; then echo '~*~ Starting auth-db-mysql'; (sh ./scripts/start-local-test-mysql.sh &); fi
