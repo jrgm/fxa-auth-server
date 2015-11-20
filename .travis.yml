@@ -35,15 +35,17 @@ notifications:
 before_install:
   - npm install -g npm@2
   - npm config set spin false
-  - if [ $DB == "mysql" ]; then echo environment variables at before install time; fi
 
 install: 
   - npm install
-  - if [ $DB == "mysql" ]; then echo environment variables at install time; fi
-  - cd node_modules/fxa-auth-db-mysql && npm install
+  - if [ $DB == "mysql" ]; then (cd node_modules/fxa-auth-db-mysql && npm install); fi
 
 script:
+  - date
   - if [ $DB == "mysql" ]; then (./scripts/start-local-test-mysql.sh &>/dev/null &); fi
+  - date
+  - sleep 5
+  - date
   - curl http://127.0.0.1:8000/
   - npm test
   - grunt nsp --force
