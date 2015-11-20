@@ -33,7 +33,7 @@ before_install:
   - npm config set spin false
 
 script:
-  - if [ $DB == "mysql" ]; then echo '~*~ Starting auth-db-mysql'; (./scripts/start-local-test-mysql.sh &>/dev/null &); fi
+  - if [ $DB == "mysql" ]; then echo '~*~ Starting auth-db-mysql'; (sh ./scripts/start-local-test-mysql.sh &>/dev/null &); fi
   - sleep 10
   - "ps -efww | grep node"
   - npm test
