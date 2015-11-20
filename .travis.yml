@@ -10,6 +10,9 @@ node_js:
  - "0.12"
  - "iojs-v2"
 
+services:
+ - mysql
+
 sudo: false
 
 env:
@@ -33,8 +36,15 @@ before_install:
   - npm config set spin false
   - mysql -uroot -e 'create database if not exists fxa'
 
+before_script:
+  - mysql -e 'DROP DATABASE IF EXISTS fxa'
+  - npm install
+  - npm ls
+  - node ./node_modules/fxa-auth-db-mysql/bin/db_patcher.js
+  - node ./scripts/gen_keys.js
+
 script:
-  - if [ $DB == "mysql" ]; then echo '~*~ Starting auth-db-mysql'; (sh ./scripts/start-local-test-mysql.sh &); fi
+  - if [ $DB == "mysql" ]; then echo '~*~ Starting auth-db-mysql'; (node ./node_modules/fxa-auth-db-mysql/bin/server.js &); fi
   - sleep 10
   - "ps -efww | grep node"
   - npm test
