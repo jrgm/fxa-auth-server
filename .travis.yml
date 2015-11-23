@@ -12,19 +12,9 @@ node_js:
 
 sudo: false
 
-addons:
-  apt:
-    sources:
-    - ubuntu-toolchain-r-test
-    packages:
-    - g++-4.8
-
 env:
-  global:
-    - CXX=g++-4.8
-  matrix:
-    - NODE_ENV=test DB=memory
-    - NODE_ENV=test DB=mysql
+  - NODE_ENV=test DB=memory
+  - NODE_ENV=test DB=mysql
 
 before_install:
   - npm install -g npm@2
