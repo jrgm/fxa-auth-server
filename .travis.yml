@@ -8,26 +8,23 @@ env:
 node_js:
  - "0.10"
  - "0.12"
- - "iojs-v2"
+ - "4"
 
 sudo: false
 
-env:
-  - NODE_ENV=test DB=memory
-  - NODE_ENV=test DB=mysql
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r-test
+    packages:
+    - g++-4.8
 
-notifications:
-  email:
-    - zcarter@mozilla.com
-    - dcoates@mozilla.com
-    - jbonacci@mozilla.com
-    - rfkelly@mozilla.com
-    - jrgm@mozilla.com
-  irc:
-    channels:
-      - "irc.mozilla.org#fxa-bots"
-    use_notice: false
-    skip_join: false
+env:
+  global:
+    - CXX=g++-4.8
+  matrix:
+    - NODE_ENV=test DB=memory
+    - NODE_ENV=test DB=mysql
 
 before_install:
   - npm install -g npm@2
